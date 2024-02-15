@@ -128,3 +128,12 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+.terraform
+.terraform.lock.hcl
+credentials.json
+screenshots.tf.
+terraform.tfstate
+terraform.tfstate.backup
+mykey.json
+varistore.tfvars
