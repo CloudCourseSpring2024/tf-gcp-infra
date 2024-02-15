@@ -3,8 +3,8 @@ name: Terraform Workflow
 on:
   pull:
     branches:
-      - main
-
+      - main 
+      
 jobs:
   terraform:
     name: Terraform Actions
