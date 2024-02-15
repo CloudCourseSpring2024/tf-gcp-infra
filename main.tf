@@ -8,6 +8,7 @@ provider "google" {
 resource "google_compute_network" "vpc-tf" {
   name                    = "vpc-tf"
   auto_create_subnetworks = false
+  delete_default_routes_on_create = true
 }
 
 
