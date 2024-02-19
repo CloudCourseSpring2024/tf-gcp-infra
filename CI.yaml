@@ -1,7 +1,7 @@
 name: Terraform Workflow
 
 on:
-  pull:
+  pull_request:
     branches:
       - main 
       
