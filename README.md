@@ -1,4 +1,4 @@
-# tf-gcp-infra .
+# tf-gcp-infra 
 GCLI
 1. terraform init.
 2. terraform plan.
