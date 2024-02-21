@@ -21,3 +21,12 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
+
+      - name: Format Terraform files
+        run: terraform fmt 
+      
+      - name: Check Terraform formatting
+        run: terraform fmt -check
+
+      - name: Validate Terraform configuration
+        run: terraform validate
