@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "electric-clone-412119",
+  "private_key_id": "b9408b91ddf6d850a021d6f312891c0bf5eaf620",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCj+Ie68eMAVeFE\nsl37tL3MRw8x+l7+unOVeVAA6njNc6lStuAq9vlmfgOVG5iTGBOSR+05E30vhcmb\nPpTsR7/oLT3m/l8n+31ZHzuK6yEhB2Ipx4rN3e7rR+WGjxZk1mwGPIfzQ6RVUCCZ\nLP3WwjJHayBCa0azZ1k/dvMVoHLmZVLxu2SwxbpFmNpJ87p4yYqGfChgJFYEzy0I\nj7aHiGXoANBrp5YkSrbnCW8FhskGU2v0e1UbZwIyDxSIBVODH11/zS8f2gcNPD+i\nMPtQgttTi/d6VwaXFEKzwqVBtXTKSU8dpDnxsuWS13M1GOIQRkuwdb5JUNYz2KqI\nJkyVJyWPAgMBAAECggEABeVXWBD/hRERdwtk1rqignhhov3qMYWZx1uj1UyZCGYq\nxfcea10TDazlSxTBcTSR65YbgQxi2XUZkTP4XeCclWgfDDHEUSc5VB2L4gxfVhUy\nYeczZgCfaSVeKu71Mq4FF1pQ1x3tCEZHzcow3GqCLVA8SjcaRTQnoOERj4sD5qXa\nOQAvaxCt8PB+EEWtsF73cuH6daVfP4K/d/9oIfx1boCVkYiRrB7hCBM8aBYAe3EZ\nVnNXVVNfvT75tEMJ2gSH01Y9FhtETlAIbxgmX1rt0P4OztPdPO5n/9cKj+Wa8vCs\nSnXsHQG3gaMPZboZpIX71dI4rVeoe/tgF9RvJPm4KQKBgQDk7ZvpJ2fUunYS+rLr\n024TZzrOrPZ1nlx8LaV9oWFbYC/7fYCSAMKmonc5CvtXNT6OA0n1XoEDOqJuOee2\nZ9UlV3UGl/N4EUB1Mg4jWq+Xv1gYaGqbWKKS/fuJMhrbwXeFTThN9l2vobd5pYnz\nkaay1tIxuWQMs5KtPHqhfv/yxwKBgQC3XHQsQnisttCKf8l5ohTRQHOOpXSAUxx9\nm1J/lAOUnFieYeOH8pXl56iXf6IkXZfMAwtELjy8CKyWT1awffGk3KwyRUTBVAzf\nxWfwgukG3C/7b7Yz3KgDAcOW70Q/yQl+TD47gsQEh053me7s5+6XL/+CZdi1VXx2\nSx/bYonu+QKBgBKQ3psbEgWjlZ3WbRpJDF1Qeul2B4rka/W6MfitVNr3QwzvUbUF\nkMO421hp9pZNACS+SYo3vtjHMZMk6RDW/OdJX3lIa3tqUsLua00ctq7k2r0oArVU\ni+LF7FdlE96MoyfRamaQO2rZ/6pC7ZwuTMmmOGfF9EI/cf7Qr9VXGmTTAoGAFYsT\nSy/0JbbFAcDJ1zSn5X4BFb1y1rDtJATfyIWHdip4bwNpTEvAOObi9AnW7xbgAuRI\nqpYUJLOQM4jW0p25inky8iUZUu2hJZl4ANYgsuGj8ZLKgYVnaBMI++7YwfXI28Hx\nfeR7S1zqZzr6y3LkoXbOOm/k6klE+lERSSFmu2ECgYAKooLhkoyRkgcb5VFRufvV\nJrm+1/eZDrn6nflZf29b0TM/X2Rys+4uu52UfRGGSuj3Yct/AH2VYvdI45WWGBQi\nNk9atfKO55kkxriw2EAg670+6muvlUjRqI1a52pNqCSMMqHYqn/hCmnoTGSrbFlw\n5zpSzJSnofbEFivOBUS8eg==\n-----END PRIVATE KEY-----\n",
+  "client_email": "cloudspring2024@electric-clone-412119.iam.gserviceaccount.com",
+  "client_id": "101385571793180178820",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloudspring2024%40electric-clone-412119.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

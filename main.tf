@@ -28,6 +28,12 @@ resource "google_compute_subnetwork" "webapp" {
   network       = google_compute_network.vpc-tf.self_link
 }
 
+resource "google_compute_subnetwork" "db" {
+  name          = "db"
+  ip_cidr_range = var.db_ip
+  region        = var.region
+  network       = google_compute_network.vpc-tf.self_link
+}
 resource "google_compute_route" "router" {
   name             = "router"
   dest_range       = var.routerange
