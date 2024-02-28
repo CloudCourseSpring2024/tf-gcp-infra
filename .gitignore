@@ -135,4 +135,6 @@ credentials.json
 screenshots.tf.
 terraform.tfstate
 terraform.tfstate.backup
-varistore.tfvars
+terraform.tfvars
+
+mykey.json
