@@ -8,10 +8,10 @@ terraform {
 }
 
 provider "google" {
-  project     = var.project_id
-  region      = var.region
-  zone        = var.zone
-  credentials = file("mykey.json")
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
+
 }
 data "google_compute_instance" "assign6_instance" {
   name = google_compute_instance.web_instance.name
@@ -23,7 +23,7 @@ resource "google_dns_record_set" "spring2024Cloud" {
   type         = "A"
   ttl          = 300 # Time to Live (TTL) in seconds
   managed_zone = "spring2024cc"
-  
+
   rrdatas = [
     data.google_compute_instance.assign6_instance.network_interface[0].access_config[0].nat_ip,
   ]
@@ -48,10 +48,10 @@ resource "google_project_iam_binding" "service_account_metric_writer" {
 }
 
 resource "google_compute_network" "vpc-tf" {
-    name                    = "vpc-tf"
-    routing_mode            = var.reg
-    delete_default_routes_on_create = true
-    auto_create_subnetworks = false
+  name                            = "vpc-tf"
+  routing_mode                    = var.reg
+  delete_default_routes_on_create = true
+  auto_create_subnetworks         = false
 }
 
 resource "google_compute_global_address" "private_service_address" {
@@ -64,16 +64,16 @@ resource "google_compute_global_address" "private_service_address" {
 }
 
 resource "google_service_networking_connection" "private_service_forwarding_rule" {
-  network               = google_compute_network.vpc-tf.name
-  service               = "servicenetworking.googleapis.com"
+  network                 = google_compute_network.vpc-tf.name
+  service                 = "servicenetworking.googleapis.com"
   reserved_peering_ranges = [google_compute_global_address.private_service_address.name]
 }
 
 resource "google_compute_subnetwork" "webapp" {
-  name                    = "webapp"
-  ip_cidr_range           = var.webapp_ip
-  region                  = var.region
-  network                 = google_compute_network.vpc-tf.id
+  name                     = "webapp"
+  ip_cidr_range            = var.webapp_ip
+  region                   = var.region
+  network                  = google_compute_network.vpc-tf.id
   private_ip_google_access = true
 }
 
@@ -96,12 +96,12 @@ resource "random_id" "db_name_suffix" {
 }
 
 resource "google_sql_database_instance" "instance" {
-  project            = var.project_id
-  name               = "cloud-database-instance"
-  region             = var.region
-  database_version   = "MYSQL_5_7"
+  project             = var.project_id
+  name                = "cloud-database-instance"
+  region              = var.region
+  database_version    = "MYSQL_5_7"
   deletion_protection = false
-  
+
   settings {
     tier              = "db-f1-micro"
     availability_type = "REGIONAL"
@@ -109,10 +109,10 @@ resource "google_sql_database_instance" "instance" {
     disk_size         = 100
 
     ip_configuration {
-      ipv4_enabled      = false
-      private_network   = google_compute_network.vpc-tf.self_link
+      ipv4_enabled    = false
+      private_network = google_compute_network.vpc-tf.self_link
     }
-    
+
     backup_configuration {
       binary_log_enabled = true
       enabled            = true
@@ -154,11 +154,11 @@ resource "google_sql_user" "webapp" {
 # }
 
 resource "google_compute_firewall" "allow_application_port" {
-  name          = "allow-application-port"
-  network       = google_compute_network.vpc-tf.self_link
+  name    = "allow-application-port"
+  network = google_compute_network.vpc-tf.self_link
   allow {
     protocol = "tcp"
-    ports    = ["3000","22"]
+    ports    = ["3000", "22"]
   }
   source_ranges = ["0.0.0.0/0"]
   target_tags   = ["application-instance"]
@@ -188,7 +188,7 @@ resource "google_compute_instance" "web_instance" {
     access_config {}
   }
 
-metadata = {
+  metadata = {
     startup-script = <<-EOF
       #!/bin/bash
       export DB_HOST="${google_sql_database_instance.instance.private_ip_address}"
@@ -212,5 +212,5 @@ metadata = {
     EOF
   }
 }
-  
+
    
