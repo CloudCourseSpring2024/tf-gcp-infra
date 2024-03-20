@@ -11,7 +11,7 @@ provider "google" {
   project     = var.project_id
   region      = var.region
   zone        = var.zone
-  credentials = file(var.mykeystored)
+  credentials = file("mykey.json")
 }
 data "google_compute_instance" "assign6_instance" {
   name = google_compute_instance.web_instance.name
@@ -188,18 +188,20 @@ resource "google_compute_instance" "web_instance" {
     access_config {}
   }
 
-  metadata = {
+metadata = {
     startup-script = <<-EOF
       #!/bin/bash
+      export DB_HOST="${google_sql_database_instance.instance.private_ip_address}"
+      export DB_PASSWORD="${google_sql_user.webapp.password}"
+      
       mkdir -p /opt/csye6225
       chown csye6225:csye6225 /opt/csye6225
-
       cat <<-EOL > /opt/csye6225/.env
       DB_DIALECT=mysql
-      DB_HOST=${google_sql_database_instance.instance.private_ip_address}
+      DB_HOST=$DB_HOST
       DB_PORT=3306
       DB_USERNAME=webapp
-      DB_PASSWORD=${google_sql_user.webapp.password}
+      DB_PASSWORD=$DB_PASSWORD
       DB_NAME=webapp
       EOL
       
@@ -207,7 +209,8 @@ resource "google_compute_instance" "web_instance" {
       sudo systemctl daemon-reload
       sudo systemctl enable nodeindex.service
       sudo systemctl restart nodeindex.service
-      EOF
-    }
-    depends_on = [google_sql_database_instance.instance, google_sql_user.webapp]
+    EOF
+  }
 }
+  
+   
