@@ -8,6 +8,10 @@ variable "region" {
   type= string
 }
 
+variable "mykeystored" {
+  description = "my key for service account"
+  type= string
+}
 variable "zone" {
   description = "GCP Zone"
   type= string
