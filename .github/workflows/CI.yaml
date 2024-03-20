@@ -19,14 +19,14 @@ jobs:
         with:
           terraform_version: 1.1.0
 
-      # - name: Terraform Init
-      #   run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
-      # - name: Format Terraform files
-      #   run: terraform fmt 
+      - name: Format Terraform files
+        run: terraform fmt 
       
-      # - name: Check Terraform formatting
-      #   run: terraform fmt -check
+      - name: Check Terraform formatting
+        run: terraform fmt -check
 
-      # - name: Validate Terraform configuration
-      #   run: terraform validate
+      - name: Validate Terraform configuration
+        run: terraform validate
