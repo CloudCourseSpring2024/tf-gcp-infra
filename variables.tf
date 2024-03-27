@@ -7,6 +7,15 @@ variable "region" {
   description = "GCP Region"
   type        = string
 }
+variable "mailgun_api_key" {
+  description = "mailgun_api_key"
+  type        = string
+}
+
+variable "mailgun_domain" {
+  description = "GCP Region"
+  type        = string
+}
 
 variable "zone" {
   description = "GCP Zone"
