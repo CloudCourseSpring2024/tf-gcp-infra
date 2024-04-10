@@ -4,6 +4,12 @@ terraform {
       source  = "hashicorp/google"
       version = "5.16.0"
     }
+    google-beta = {
+
+      source  = "hashicorp/google-beta"
+
+      version = ">= 3.50.0" // specify the minimum required version
+    }
   }
 }
 
@@ -11,9 +17,19 @@ provider "google" {
   project     = var.project_id
   region      = var.region
   zone        = var.zone
-  //credentials = file("mykey.json")
+  credentials = file("mykey.json")
 }
 
+provider "google-beta" {
+  project = var.project_id
+  region  = var.region
+  credentials = file("mykey.json")
+}
+
+resource "google_project_service_identity" "gcp_sa_cloud_sql" {
+  provider = google-beta
+  service  = "sqladmin.googleapis.com"
+}
 data "google_project" "project" {
   project_id = var.project_id
 }
@@ -21,16 +37,22 @@ data "google_project" "project" {
 #   name = google_compute_instance.web_instance.name
 #   zone = var.zone
 # }
+provider "random" {
+
+}
 resource "google_compute_region_instance_template" "instance_template" {
-  name         = "instance-template"
+  name_prefix        = "instance-template"
   machine_type = "e2-small"
   region       = var.region
   tags         = ["webapp-lb-target", "ssh-access","application-instance"]
 
   disk {
-    source_image = var.imagename
+    source_image = var.imagename 
     auto_delete  = true
     boot         = true
+    disk_encryption_key {
+      kms_key_self_link = google_kms_crypto_key.vm_crypto_key.id
+    } 
   }
    service_account {
     email  = google_service_account.cdn_service_account.email
@@ -39,6 +61,9 @@ resource "google_compute_region_instance_template" "instance_template" {
   network_interface {
     network  = google_compute_network.vpc-tf.self_link
     subnetwork = google_compute_subnetwork.webapp.self_link
+  }
+  lifecycle {
+    create_before_destroy = true
   }
   metadata = {
     startup-script = <<-EOF
@@ -65,7 +90,7 @@ resource "google_compute_region_instance_template" "instance_template" {
       sudo systemctl restart nodeindex.service
       EOF
     }
-     depends_on = [google_sql_database_instance.instance, google_sql_user.webapp]
+     depends_on = [google_kms_crypto_key_iam_binding.vm_key_encrypter_decrypter,google_sql_database_instance.instance, google_sql_user.webapp]
 }
 
  
@@ -188,6 +213,12 @@ resource "google_project_iam_member" "lb_admin" {
   role    = "roles/compute.loadBalancerAdmin"
   member = "serviceAccount:${google_service_account.cdn_service_account.email}"
 }
+
+resource "google_project_iam_member" "project_iam_member" {
+  project = var.project_id
+  role    = "roles/cloudsql.admin"
+  member  = "serviceAccount:${google_service_account.cdn_service_account.email}"
+}
 resource "google_dns_record_set" "spring2024Cloud" {
   name         = "spring2024cc.me."
   type         = "A"
@@ -275,9 +306,9 @@ resource "google_sql_database_instance" "instance" {
   region             = var.region
   database_version   = "MYSQL_5_7"
   deletion_protection = false
-  
+  encryption_key_name = google_kms_crypto_key.cloudsql_crypto_key.id
   settings {
-    tier              = "db-f1-micro"
+    tier              = "db-n1-standard-1"
     availability_type = "REGIONAL"
     disk_type         = "pd-ssd"
     disk_size         = 100
@@ -294,6 +325,7 @@ resource "google_sql_database_instance" "instance" {
   }
 
   depends_on = [
+    google_kms_crypto_key_iam_binding.cloudsql_key_encrypter_decrypter,
     google_service_networking_connection.private_service_forwarding_rule
   ]
 
@@ -466,8 +498,14 @@ resource "google_pubsub_topic_iam_binding" "pubsub_publisher_binding" {
 
 resource "google_storage_bucket" "bucket" {
   name     = "${var.project_id}-gcf-source"  # Every bucket name must be globally unique
-  location = "US"
+  location = var.region
   uniform_bucket_level_access = true
+  encryption {
+    default_kms_key_name = google_kms_crypto_key.storage_crypto_key.id
+  }
+  depends_on = [
+    google_kms_crypto_key_iam_binding.bucket_key_encrypter_decrypter
+  ]
 }
  
 resource "google_storage_bucket_object" "object" {
@@ -497,7 +535,7 @@ resource "google_vpc_access_connector" "serverless_connector" {
 resource "google_project_iam_member" "cloud_sql_client" {
   project = var.project_id
   role    = "roles/cloudsql.client"
-  member  = google_service_account.cdn_service_account.member
+  member  = "serviceAccount:${google_service_account.cdn_service_account.email}"
 }
 
 # // Adjust the following Cloud Function resource to use the newly created bucket
@@ -646,4 +684,115 @@ resource "google_pubsub_topic_iam_policy" "topic_iam_policy" {
 # output "sql_instance_private_ip" {
 #   value = google_sql_database_instance.instance.private_ip_address
 # }
+resource "random_id" "key_ring_id" {
+  byte_length = 8
+}
+resource "google_kms_key_ring" "my_key_ring" {
+  name     = "my-key-ring-${random_id.key_ring_id.hex}"
+  location = var.region
+}
+
+resource "google_project_iam_member" "cdn_service_account_encrypter_decrypter" {
+  project = var.project_id
+  role    = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member  = "serviceAccount:${google_service_account.cdn_service_account.email}"
+  
+  depends_on = [google_service_account.cdn_service_account]
+}
+resource "google_kms_crypto_key" "vm_crypto_key" {
+  name            = "vm-crypto-key-${random_id.key_ring_id.hex}"
+  key_ring        = google_kms_key_ring.my_key_ring.id
+  rotation_period = "2592000s"
+  purpose  = "ENCRYPT_DECRYPT"
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+resource "google_kms_crypto_key" "cloudsql_crypto_key" {
+  name            = "cloudsql-crypto-key-${random_id.key_ring_id.hex}"
+  key_ring        = google_kms_key_ring.my_key_ring.id
+  rotation_period = "2592000s"
+  purpose  = "ENCRYPT_DECRYPT"
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+resource "google_kms_crypto_key" "storage_crypto_key" {
+  name            = "storage-cmek-${random_id.key_ring_id.hex}"
+  key_ring        = google_kms_key_ring.my_key_ring.id
+  rotation_period = "2592000s" # 30 days in seconds
+  purpose  = "ENCRYPT_DECRYPT"
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+
+resource "google_kms_crypto_key_iam_binding" "vm_key_encrypter_decrypter" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.vm_crypto_key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  depends_on = [ google_service_account.cdn_service_account ]
+  members = ["serviceAccount:service-993163341651@compute-system.iam.gserviceaccount.com",
+    "serviceAccount:${google_service_account.cdn_service_account.email}",
+  ]
+}
+
+# Grant the service account roles/cloudkms.cryptoKeyEncrypterDecrypter on the CloudSQL encryption key
+resource "google_kms_crypto_key_iam_binding" "cloudsql_key_encrypter_decrypter" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.cloudsql_crypto_key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+
+  # members = [
+  #   "serviceAccount:${google_service_account.cdn_service_account.email}",
+  # ]
+    members = [
+    "serviceAccount:${google_project_service_identity.gcp_sa_cloud_sql.email}",
+  ]
+}
+
+data "google_storage_project_service_account" "gcs_account" {
+}
+
+# Grant the service account roles/cloudkms.cryptoKeyEncrypterDecrypter on the Bucket encryption key
+resource "google_kms_crypto_key_iam_binding" "bucket_key_encrypter_decrypter" {
+  provider      = google-beta
+  crypto_key_id = google_kms_crypto_key.storage_crypto_key.id
+  role          = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+
+  # members = [
+  #   "serviceAccount:${google_service_account.cdn_service_account.email}",
+  # ]
+  members = ["serviceAccount:${data.google_storage_project_service_account.gcs_account.email_address}"]
+
+}
+
+resource "google_project_iam_member" "kms_admin" {
+  project = var.project_id
+  role    = "roles/cloudkms.admin"
+  # member  = "serviceAccount:${google_service_account.cdn_service_account.email}"
+  member  = "serviceAccount:${google_project_service_identity.gcp_sa_cloud_sql.email}"
+  depends_on = [google_project_service_identity.gcp_sa_cloud_sql]
+}
+
+resource "google_storage_bucket_iam_member" "bucket_member" {
+  bucket = google_storage_bucket.bucket.name
+  role   = "roles/storage.objectAdmin"
+  member  = "serviceAccount:${google_project_service_identity.gcp_sa_cloud_sql.email}"
+  depends_on = [
+    google_project_service_identity.gcp_sa_cloud_sql,
+    google_storage_bucket.bucket
+  ]
+}
+
+resource "google_project_iam_member" "storage_admin" {
+  project = var.project_id
+  role    = "roles/storage.admin"
+  member  = "serviceAccount:${google_project_service_identity.gcp_sa_cloud_sql.email}"
+  depends_on = [google_project_service_identity.gcp_sa_cloud_sql]
+
+}
    
