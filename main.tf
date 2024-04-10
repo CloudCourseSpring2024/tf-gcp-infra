@@ -153,17 +153,17 @@ resource "google_compute_region_autoscaler" "autoscaler" {
 }
 
 # Update firewall ingress rules
-resource "google_compute_firewall" "lb_firewall" {
-  name    = "firewall-lb"
-  network = google_compute_network.vpc-tf.name
+# resource "google_compute_firewall" "lb_firewall" {
+#   name    = "firewall-lb"
+#   network = google_compute_network.vpc-tf.name
 
-  allow {
-    protocol = "tcp"
-    ports    = ["80","443"]
-  }
-  source_ranges = ["0.0.0.0/0"]
-  target_tags = ["webapp-lb-target","application-instance"]
-}
+#   allow {
+#     protocol = "tcp"
+#     ports    = ["80","443"]
+#   }
+#   source_ranges = ["0.0.0.0/0"]
+#   target_tags = ["webapp-lb-target","application-instance"]
+# }
 resource "google_compute_global_address" "lb_ip" {
   name          = "lb-ip"
   ip_version    = "IPV4"
